@@ -1,0 +1,25 @@
+{
+  "name": "nodejs_rest_shop_api",
+  "version": "1.0.0",
+  "description": "A Node.js RESTful API Project (Build a simple shop API)",
+  "keywords": [
+    "node",
+    "restful",
+    "api"
+  ],
+  "license": "ISC",
+  "author": "Deep Chotaliya",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon server.js"
+  },
+  "dependencies": {
+    "express": "^5.2.1",
+    "morgan": "^1.12.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.14"
+  }
+}
