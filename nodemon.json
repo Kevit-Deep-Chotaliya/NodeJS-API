@@ -1,0 +1,6 @@
+{
+    "env" : {
+        "MONGO_ATLAS_UNAME" : "deepchotaliya_db_user",
+        "MONGO_ATLAS_PW" : "SAEUw95jIPItYYvM"
+    }
+}
