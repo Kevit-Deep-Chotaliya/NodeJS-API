@@ -4,8 +4,9 @@ const mongoose = require('mongoose');
 const Order = require('./models/order');
 const Product = require('./models/product');
 const { request } = require('../../app');
+const checkAuth = require('../middleware/check-auth.js')
 
-router.get('/', (req, res, next) => {
+router.get('/', checkAuth, (req, res, next) => {
 
     Order.find()
         .select('product quantity _id')
@@ -38,7 +39,7 @@ router.get('/', (req, res, next) => {
 
 });
 
-router.post('/', async (req, res, next) => {
+router.post('/', checkAuth, async (req, res, next) => {
     try {
 
         const product = await Product.findById(req.body.product);
@@ -78,7 +79,7 @@ router.post('/', async (req, res, next) => {
     }
 });
 
-router.get('/:orderId', (req, res, next) => {
+router.get('/:orderId', checkAuth, (req, res, next) => {
 
     Order.findById(req.params.orderId)
         .select('product quantity')
@@ -108,14 +109,14 @@ router.get('/:orderId', (req, res, next) => {
         })
 });
 
-router.patch('/:orderId', (req, res, next) => {
+router.patch('/:orderId', checkAuth,  (req, res, next) => {
     res.status(200).json({
         message: 'order Updated!!',
         orderId: req.params.orderId
     })
 })
 
-router.delete('/:orderId', (req, res, next) => {
+router.delete('/:orderId', checkAuth, (req, res, next) => {
     const id = req.params.orderId;
     Order.deleteOne({ _id: id })
         .exec()

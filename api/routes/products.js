@@ -3,10 +3,33 @@ const router = express.Router();
 const Product = require('./models/product.js');
 const { default: mongoose } = require('mongoose');
 const { request } = require('../../app.js');
+const multer = require('multer');
+const checkAuth = require('../middleware/check-auth.js')
+
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, './uploads/');
+    },
+    filename: function (req, file, cb) {
+        cb(null, new Date().toISOString() + file.originalname);
+    }
+})
+const upload = multer({
+
+    storage: storage, limits: { fileSize: 2 * 1024 * 1024 },
+
+    fileFilter: function (req, file, cb) {
+        if (file.mimetype === 'image/jpeg' || file.mimetype === 'image/png') {
+            cb(null, true);
+        } else {
+            cb(new Error('only JPEG or PNG images are allowed'))
+        }
+    }
+});
 
 router.get('/', (req, res, next) => {
     Product.find()
-        .select('name price _id')
+        .select('name price _id productImage')
         .exec()
         .then(docs => {
             const response = {
@@ -16,6 +39,7 @@ router.get('/', (req, res, next) => {
                         name: doc.name,
                         price: doc.price,
                         _id: doc._id,
+                        productImage : doc.productImage,
                         request: {
                             type: 'GET',
                             url: 'http://localhost:3000/products/' + doc._id
@@ -33,7 +57,16 @@ router.get('/', (req, res, next) => {
         })
 });
 
-router.post('/', (req, res, next) => {
+router.post('/', checkAuth, upload.single('productImage'), (req, res, next) => {
+
+    if (!req.file) {
+        return res.status(400).json({
+            message: 'Please upload a product image'
+        });
+    }
+
+    req.body.productImage = req.file.path;
+
     Product.insertMany(req.body)
         .then(result => {
             res.status(201).json({
@@ -42,6 +75,7 @@ router.post('/', (req, res, next) => {
                     return {
                         name: doc.name,
                         price: doc.price,
+                        productImage: doc.productImage,
                         _id: doc._id,
                         request: {
                             type: 'GET',
@@ -62,7 +96,7 @@ router.get('/:productId', (req, res, next) => {
     const id = req.params.productId;
 
     Product.findById(id)
-        .select('name price _id')
+        .select('name price _id productImage')
         .exec()
         .then(doc => {
             console.log("From Database : ", doc);
@@ -86,7 +120,7 @@ router.get('/:productId', (req, res, next) => {
 
 })
 
-router.patch('/:productId', (req, res, next) => {
+router.patch('/:productId', checkAuth, (req, res, next) => {
     const id = req.params.productId;
     Product.findByIdAndUpdate(
         id,
@@ -110,17 +144,17 @@ router.patch('/:productId', (req, res, next) => {
         })
 })
 
-router.delete('/:productId', (req, res, next) => {
+router.delete('/:productId', checkAuth, (req, res, next) => {
     const id = req.params.productId;
     Product.deleteOne({ _id: id })
         .exec()
         .then(result => {
             res.status(200).json({
-                message : 'Product deleted',
-                request : {
-                    type : 'POST',
-                    url : 'http://localhost:3000/products',
-                    body : {name : 'String', price : 'Number'}
+                message: 'Product deleted',
+                request: {
+                    type: 'POST',
+                    url: 'http://localhost:3000/products',
+                    body: { name: 'String', price: 'Number' }
                 }
             })
         })
